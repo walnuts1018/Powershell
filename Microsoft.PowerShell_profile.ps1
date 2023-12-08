@@ -1,8 +1,7 @@
-Set-Alias nano "C:\Program Files(user)\nano"
-Set-Alias iperf3 "C:\Program Files(user)\iperf-3.1.3-win64\iperf3.exe"
+$profile_dir=Split-Path $profile
 
 Import-Module posh-git
-oh-my-posh init pwsh --config ~/.pwsh10k.omp.json | Invoke-Expression
+oh-my-posh init pwsh --config $profile_dir/.pwsh10k.omp.json | Invoke-Expression
 
 
 Set-PSReadLineOption -PredictionSource History -PredictionViewStyle ListView
@@ -27,8 +26,6 @@ Set-Alias -Name: k -Value: kubectl
 kubectl completion powershell | Out-String | Invoke-Expression
 Register-ArgumentCompleter -CommandName 'k' -ScriptBlock $__kubectlCompleterBlock
 
-$ENV:Path+=";C:\Program Files(user);C:\Program Files(user)\iperf-3.1.3-win64\"
-$ENV:Path+=";C:\Users\juglans\.krew\bin\"
-
+flux completion powershell | Out-String | Invoke-Expression
 helm completion powershell | Out-String | Invoke-Expression
 
