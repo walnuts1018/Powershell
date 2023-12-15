@@ -63,6 +63,8 @@ function ls {
         }
     }
 
+    $prefix += '$result = New-Object -TypeName PSObject -Property @{Mode = "Mode"; LastWriteTime = "LastWriteTime"; Length = "Length"; Name = "Name"; LinkTarget = "LinkTarget"};'
+
     #show hidden files & dot files
     if ($rawoptions -contains "a") {}
     else {
@@ -76,20 +78,21 @@ function ls {
 
     #show file size in KB
     if ($rawoptions -contains "h") {
-        $prefix += '$result = New-Object -TypeName PSObject -Property @{Mode = "Mode"; LastWriteTime = "LastWriteTime"; Length = "Length"; Name = "Name" };'
-        $saffix += '|ForEach-Object {$result.Mode = $_.Mode; $result.LastWriteTime = $_.LastWriteTime; $result.Length = [string]([Math]::Round($_.Length/1024, 1, [MidpointRounding]::AwayFromZero))+"K"; $result.Name = $_.Name; $result}'
+        $saffix += '|ForEach-Object {$result.Mode = $_.Mode; $result.LastWriteTime = $_.LastWriteTime; $result.Length = [string]([Math]::Round($_.Length/1024, 1, [MidpointRounding]::AwayFromZero))+"K"; $result.Name = $_.Name; $result.LinkTarget=$_.LinkTarget; $result}'
     }
 
     #show long format
     if ($rawoptions -contains "l") {
-        $saffix += "| Format-Table Mode,LastWriteTime,Length,Name" 
+        $saffix += '| ForEach-Object {$result.Mode = $_.Mode; $result.LastWriteTime = $_.LastWriteTime; $result.Length = $_.Length; $result.Name = [string]($_.Name)+($null -ne $_.LinkTarget?" -> "+[string]($_.LinkTarget):""); $result} | Format-Table Mode,LastWriteTime,Length,Name'
     }
     else {
         $saffix += "| Select-Object Name | Format-Wide -AutoSize"
     }
 
     $command = "$($prefix -join " ") Get-ChildItem $($options -join " ") $($paths -join " ") $($saffix -join " ")"
-    #write-host $command
+    if (Test-Path Variable:PROFILE_DEBUG) {
+        write-host $command
+    }
     $command | Invoke-Expression
 }
 
