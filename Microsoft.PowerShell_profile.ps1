@@ -34,12 +34,18 @@ helm completion powershell | Out-String | Invoke-Expression
 Remove-Alias -Name: "ls"
 
 function ls {
-    $rawoptions = @()
     $paths = @()
-    write-host $args
+
+    $rawoptions = @()
+    $options = @()
+    
+    $prefix = @()
+    $saffix = @()
+
     foreach ($a in $args) {
         if ($a.StartsWith("-") -And !($a.StartsWith("--"))) {
-            $rawoptions += $a.ToCharArray()[1..-1]
+            $tmp = $a.ToCharArray()
+            $rawoptions += $tmp[0..($tmp.length - 1)]
         }
         elseif ($a.StartsWith("--")) {
             #TODO
@@ -48,22 +54,42 @@ function ls {
             $paths += $a
         }
     }
-    $rawoptions = $rawoptions | Select-Object -Unique
-    $options = @()
 
+    $rawoptions = $rawoptions | Select-Object -Unique
     foreach ($o in $rawoptions) {
         switch ($o) {
+            #show hidden files
             "a" { $options += "-Force" }
         }
     }
 
-    $command = ""
-    if (($rawoptions -contains "l")) {
-        $command = "Get-ChildItem $($options -join " ") $($paths -join " ")"
+    #show hidden files & dot files
+    if ($rawoptions -contains "a") {}
+    else {
+        $saffix += '| Where-Object { $_.Name -NotMatch "^\." }'
+    }
+
+    #sort by size
+    if ($rawoptions -contains "S") {
+        $saffix += "| Sort-Object -Property Length -Descending"
+    }
+
+    #show file size in KB
+    if ($rawoptions -contains "h") {
+        $prefix += '$result = New-Object -TypeName PSObject -Property @{Mode = "Mode"; LastWriteTime = "LastWriteTime"; Length = "Length"; Name = "Name" };'
+        $saffix += '|ForEach-Object {$result.Mode = $_.Mode; $result.LastWriteTime = $_.LastWriteTime; $result.Length = [string]([Math]::Round($_.Length/1024, 1, [MidpointRounding]::AwayFromZero))+"K"; $result.Name = $_.Name; $result}'
+    }
+
+    #show long format
+    if ($rawoptions -contains "l") {
+        $saffix += "| Format-Table Mode,LastWriteTime,Length,Name" 
     }
     else {
-        $command = "Get-ChildItem $($options -join " ") $($paths -join " ") | Format-Wide -Column 5"
+        $saffix += "| Select-Object Name | Format-Wide -AutoSize"
     }
+
+    $command = "$($prefix -join " ") Get-ChildItem $($options -join " ") $($paths -join " ") $($saffix -join " ")"
+    #write-host $command
     $command | Invoke-Expression
 }
 
