@@ -90,9 +90,7 @@ function ls {
     }
 
     $command = "$($prefix -join " ") Get-ChildItem $($options -join " ") $($paths -join " ") $($saffix -join " ")"
-    if (Test-Path Variable:PROFILE_DEBUG) {
-        write-host $command
-    }
+    Write-Verbose $command
     $command | Invoke-Expression
 }
 
