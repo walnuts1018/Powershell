@@ -12,7 +12,7 @@ function slowJobs() {
 function prompt {
     if (Test-Path variable:global:ompjob) {
         Receive-Job -Wait -AutoRemoveJob -Job $global:ompjob | Invoke-Expression;
-        Receive-Job -Wait -AutoRemoveJob -Job $global:slowjob | Invoke-Expression;
+        Receive-Job -Wait -AutoRemoveJob -Job $global:slowjob;
         Remove-Variable ompjob -Scope Global;
         Remove-Variable slowjob -Scope Global;
         return prompt;
