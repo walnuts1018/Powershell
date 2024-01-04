@@ -6,23 +6,16 @@ function slowJobs() {
     Import-Module posh-git;
 }
 
-function prompt {
-    if ((Test-Path variable:global:slowInvokeJobs) -or (Test-Path variable:global:slowjob)) {
-        for ($i = 0; $i -lt $global:slowInvokeJobs.Count; $i++) {
-            Receive-Job -Wait -AutoRemoveJob -Job $global:slowInvokeJobs[$i] | Invoke-Expression;
-        } 
-        Receive-Job -Wait -AutoRemoveJob -Job $global:slowjob;
-        
-        Remove-Variable slowInvokeJobs -Scope Global;
-        Remove-Variable slowjob -Scope Global;
 
+function prompt {
+    if (Test-Path variable:global:ompjob) {
+        Receive-Job -Wait -AutoRemoveJob -Job $global:ompjob | Invoke-Expression;
+        Receive-Job -Wait -AutoRemoveJob -Job $global:slowjob;
+        Remove-Variable ompjob -Scope Global;
+        Remove-Variable slowjob -Scope Global;
         return prompt;
     }
-    $global:slowInvokeJobs = @();
-    $global:slowInvokeJobs += Start-Job { param ([string]$profile_dir) (@(& 'C:/Users/juglans/AppData/Local/Programs/oh-my-posh/bin/oh-my-posh.exe' init pwsh --config="$profile_dir\.pwsh10k.omp.json" --print) -join "`n") } -ArgumentList $profile_dir;
-    #$global:slowInvokeJobs += Start-Job { flux completion powershell | Out-String };
-    #$global:slowInvokeJobs += Start-Job { helm completion powershell | Out-String };
-
+    $global:ompjob = Start-Job { param ([string]$profile_dir) (@(& 'C:/Users/juglans/AppData/Local/Programs/oh-my-posh/bin/oh-my-posh.exe' init pwsh --config="$profile_dir\.pwsh10k.omp.json" --print) -join "`n") } -ArgumentList $profile_dir;
     $global:slowjob = Start-Job { slowJobs };
     
     Write-Host -ForegroundColor Blue "Loading `$profile in the background..."
@@ -59,8 +52,8 @@ kubectl completion powershell | Out-String | Invoke-Expression
 Set-Alias -Name: k -Value: kubectl
 Register-ArgumentCompleter -CommandName 'k' -ScriptBlock $__kubectlCompleterBlock
 
-flux completion powershell | Out-String | Invoke-Expression
-helm completion powershell | Out-String | Invoke-Expression
+flux completion powershell | Out-String | Invoke-Expression;
+helm completion powershell | Out-String | Invoke-Expression;
 
 # ------------------- eza -------------------
 # eza存在確認
