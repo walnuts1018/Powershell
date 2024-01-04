@@ -62,7 +62,7 @@ if (Get-Command eza -ea SilentlyContinue) {
 }
 
 function ls() {
-    eza --git -@ -g -mU --icons --time-style=long-iso --color=automatic --group-directories-first $args
+    eza --git -@ -g -mU --icons --time-style=long-iso --color=automatic --group-directories-first --hyperlink -h $args
 }
 
 function ll() {
