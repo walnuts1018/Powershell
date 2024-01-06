@@ -1,11 +1,9 @@
 $profile_dir = Split-Path $profile
 
-Import-Module PSReadLine;
-
+# ---------- 遅延読み込み ----------
 function slowJobs() {
     Import-Module posh-git;
 }
-
 
 function prompt {
     if (Test-Path variable:global:ompjob) {
@@ -24,12 +22,16 @@ function prompt {
     return " ";
 }
 
+# ---------- 補完表示設定 ----------
+Import-Module PSReadLine;
 Set-PSReadLineOption -PredictionSource History -PredictionViewStyle ListView
 Set-PSReadLineKeyHandler -Key Tab -Function MenuComplete
 
+# ---------- エイリアス ----------
 Set-Alias -Name: "open" -Value: "explorer"
 Set-Alias -Name: "pbcopy" -Value: "Set-Clipboard"
 
+# ---------- ugrep ----------
 # ugrep存在確認
 if (Get-Command ugrep -ea SilentlyContinue) {
     Set-Alias -Name: "grep" -Value: "ugrep"
@@ -38,6 +40,7 @@ else {
     Set-Alias -Name: "grep" -Value: "Select-String"
 }
 
+# ---------- wingetタブ補完 ----------
 Register-ArgumentCompleter -Native -CommandName winget -ScriptBlock {
     param($wordToComplete, $commandAst, $cursorPosition)
     [Console]::InputEncoding = [Console]::OutputEncoding = $OutputEncoding = [System.Text.Utf8Encoding]::new()
@@ -48,14 +51,15 @@ Register-ArgumentCompleter -Native -CommandName winget -ScriptBlock {
     }
 }
 
+# ---------- kubeタブ補完 ----------
 kubectl completion powershell | Out-String | Invoke-Expression
 Set-Alias -Name: k -Value: kubectl
+# kもkubectlの補完を使う
 Register-ArgumentCompleter -CommandName 'k' -ScriptBlock $__kubectlCompleterBlock
-
 flux completion powershell | Out-String | Invoke-Expression;
 helm completion powershell | Out-String | Invoke-Expression;
 
-# ------------------- eza -------------------
+# ---------- eza ----------
 # eza存在確認
 if (Get-Command eza -ea SilentlyContinue) {
     Remove-Alias -Name: "ls"
@@ -89,3 +93,4 @@ function lc() {
 function tree() {
     ls -Tl --no-permissions --no-filesize --no-user --no-time
 }
+# --------------------
