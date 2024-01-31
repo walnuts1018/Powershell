@@ -57,8 +57,13 @@ kubectl completion powershell | Out-String | Invoke-Expression
 Set-Alias -Name: k -Value: kubectl
 # kもkubectlの補完を使う
 Register-ArgumentCompleter -CommandName 'k' -ScriptBlock $__kubectlCompleterBlock
-flux completion powershell | Out-String | Invoke-Expression;
-helm completion powershell | Out-String | Invoke-Expression;
+if (Get-Command flux -ea SilentlyContinue) {
+    flux completion powershell | Out-String | Invoke-Expression;
+}
+
+if (Get-Command helm -ea SilentlyContinue) {
+    helm completion powershell | Out-String | Invoke-Expression;
+}
 
 # ---------- eza ----------
 # eza存在確認
