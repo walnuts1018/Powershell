@@ -31,7 +31,7 @@ Set-PSReadLineKeyHandler -Key Tab -Function MenuComplete
 Set-Alias -Name: "open" -Value: "explorer"
 Set-Alias -Name: "pbcopy" -Value: "Set-Clipboard"
 Set-Alias -Name: "export" -Value: "set"
-Set-Alias -Name: "wget" -Value: "winget"
+Set-Alias -Name: "wget" -Value: "Invoke-WebRequest"
 
 # ---------- ugrep ----------
 # ugrep存在確認
