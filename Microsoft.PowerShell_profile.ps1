@@ -30,6 +30,7 @@ Set-PSReadLineKeyHandler -Key Tab -Function MenuComplete
 # ---------- エイリアス ----------
 Set-Alias -Name: "open" -Value: "explorer"
 Set-Alias -Name: "pbcopy" -Value: "Set-Clipboard"
+Set-Alias -Name: "export" -Value: "set"
 
 # ---------- ugrep ----------
 # ugrep存在確認
