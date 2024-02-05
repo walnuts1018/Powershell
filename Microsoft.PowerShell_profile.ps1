@@ -13,7 +13,8 @@ function prompt {
         Remove-Variable slowjob -Scope Global;
         return prompt;
     }
-    $global:ompjob = Start-Job { param ([string]$profile_dir) (@(& 'C:/Users/juglans/AppData/Local/Programs/oh-my-posh/bin/oh-my-posh.exe' init pwsh --config="$profile_dir\.pwsh10k.omp.json" --print) -join "`n") } -ArgumentList $profile_dir;
+    $ohmyposh_path = Get-Command oh-my-posh.exe -ea SilentlyContinue | Select-Object -ExpandProperty Source;
+    $global:ompjob = Start-Job { param ([string]$profile_dir, [string]$ohmyposh_path) (@(& "$ohmyposh_path" init pwsh --config="$profile_dir\.pwsh10k.omp.json" --print) -join "`n") } -ArgumentList $profile_dir, $ohmyposh_path;
     $global:slowjob = Start-Job { slowJobs };
     
     Write-Host -ForegroundColor Blue "Loading `$profile in the background..."
@@ -26,21 +27,6 @@ function prompt {
 Import-Module PSReadLine;
 Set-PSReadLineOption -PredictionSource History -PredictionViewStyle ListView
 Set-PSReadLineKeyHandler -Key Tab -Function MenuComplete
-
-# ---------- エイリアス ----------
-Set-Alias -Name: "open" -Value: "explorer"
-Set-Alias -Name: "pbcopy" -Value: "Set-Clipboard"
-Set-Alias -Name: "export" -Value: "set"
-Set-Alias -Name: "wget" -Value: "Invoke-WebRequest"
-
-# ---------- ugrep ----------
-# ugrep存在確認
-if (Get-Command ugrep -ea SilentlyContinue) {
-    Set-Alias -Name: "grep" -Value: "ugrep"
-}
-else {                                
-    Set-Alias -Name: "grep" -Value: "Select-String"
-}
 
 # ---------- wingetタブ補完 ----------
 Register-ArgumentCompleter -Native -CommandName winget -ScriptBlock {
@@ -58,6 +44,7 @@ kubectl completion powershell | Out-String | Invoke-Expression
 Set-Alias -Name: k -Value: kubectl
 # kもkubectlの補完を使う
 Register-ArgumentCompleter -CommandName 'k' -ScriptBlock $__kubectlCompleterBlock
+
 if (Get-Command flux -ea SilentlyContinue) {
     flux completion powershell | Out-String | Invoke-Expression;
 }
@@ -67,37 +54,71 @@ if (Get-Command helm -ea SilentlyContinue) {
 }
 
 # ---------- eza ----------
-# eza存在確認
 if (Get-Command eza -ea SilentlyContinue) {
     Remove-Alias -Name: "ls"
-}
 
-function ls() {
-    eza --git -@ -g -mU --icons --time-style=long-iso --color=automatic --group-directories-first --hyperlink -h $args
-}
+    function ls() {
+        eza --git -@ -g -mU --icons --time-style=long-iso --color=automatic --group-directories-first --hyperlink -h $args
+    }
 
-function ll() {
-    ls -lh # Long format, git status
-}
-function l() {
-    ll -a # Long format, all files
-}
-function lr() {
-    ls -Tlh # Long format, recursive as a tree
-}
-function lx() {
-    ll -sextension # Long format, sort by extension
-}
-function lk() {
-    ll -ssize # Long format, largest file size last
-}
-function lt() {
-    ll -smodified # Long format, newest modification time last
-}
-function lc() {
-    ll -schanged # Long format, newest status change (ctime) last
-}
-function tree() {
-    ls -Tl --no-permissions --no-filesize --no-user --no-time
+    function ll() {
+        ls -lh # Long format, git status
+    }
+    function l() {
+        ll -a # Long format, all files
+    }
+    function lr() {
+        ls -Tlh # Long format, recursive as a tree
+    }
+    function lx() {
+        ll -sextension # Long format, sort by extension
+    }
+    function lk() {
+        ll -ssize # Long format, largest file size last
+    }
+    function lt() {
+        ll -smodified # Long format, newest modification time last
+    }
+    function lc() {
+        ll -schanged # Long format, newest status change (ctime) last
+    }
+    function tree() {
+        ls -Tl --no-permissions --no-filesize --no-user --no-time
+    }
 }
 # --------------------
+
+
+# ---------- エイリアス ----------
+## --------- エイリアスutil ----------
+function SafeSetAlias {
+    Param(
+        [Parameter(Mandatory = $true, Position = 0)]
+        [string]$Alias,
+        [Parameter(Mandatory = $true, Position = 1)]
+        [string[]]$Command
+    )
+
+    foreach ($cmd in $Command) {
+        # 空白を含んでいたら関数として定義
+        if ($Command -match "\s") {
+            $func = "function global:$Alias { $Command }"
+            Invoke-Expression $func
+            return
+        }
+        # それ以外はAlias
+        else {
+            if (Get-Command $cmd -ea SilentlyContinue) {
+                Set-Alias -Name: $Alias -Value: $cmd -Scope: Global
+                break
+            }
+        }
+    }
+}
+
+SafeSetAlias -Alias "open" -Command "explorer"
+SafeSetAlias -Alias "pbcopy" -Command "Set-Clipboard"
+SafeSetAlias -Alias "export" -Command "set"
+SafeSetAlias -Alias "wget" -Command "wget2"
+SafeSetAlias -Alias "grep" -Command "ugrep", "grep", "Select-String"
+SafeSetAlias -Alias "htop" -Command "btm -b"
