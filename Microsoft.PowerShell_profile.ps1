@@ -24,7 +24,6 @@ function prompt {
 }
 
 # ---------- 補完表示設定 ----------
-Import-Module PSReadLine;
 Set-PSReadLineOption -PredictionSource History -PredictionViewStyle ListView
 Set-PSReadLineKeyHandler -Key Tab -Function MenuComplete
 
@@ -40,17 +39,21 @@ Register-ArgumentCompleter -Native -CommandName winget -ScriptBlock {
 }
 
 # ---------- kubeタブ補完 ----------
-kubectl completion powershell | Out-String | Invoke-Expression
+#kubectl completion powershell | Out-String | Invoke-Expression"
+. "$profile_dir\kubectl.ps1"
+
 Set-Alias -Name: k -Value: kubectl
 # kもkubectlの補完を使う
 Register-ArgumentCompleter -CommandName 'k' -ScriptBlock $__kubectlCompleterBlock
 
 if (Get-Command flux -ea SilentlyContinue) {
-    flux completion powershell | Out-String | Invoke-Expression;
+    #flux completion powershell | Out-String | Invoke-Expression;
+    . "$profile_dir\fluxcd.ps1"
 }
 
 if (Get-Command helm -ea SilentlyContinue) {
-    helm completion powershell | Out-String | Invoke-Expression;
+    #helm completion powershell | Out-String | Invoke-Expression;
+    . "$profile_dir\helm.ps1"
 }
 
 # ---------- eza ----------
@@ -116,7 +119,7 @@ function SafeSetAlias {
     }
 }
 
-SafeSetAlias -Alias "open" -Command "explorer"
+Set-Alias -Name: "open" -Value: "explorer"
 SafeSetAlias -Alias "pbcopy" -Command "Set-Clipboard"
 SafeSetAlias -Alias "export" -Command "set"
 SafeSetAlias -Alias "wget" -Command "wget2"
