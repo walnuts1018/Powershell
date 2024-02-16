@@ -1,21 +1,15 @@
 $profile_dir = Split-Path $profile
 
-# ---------- 遅延読み込み ----------
-function slowJobs() {
-    Import-Module posh-git;
-}
+Import-Module posh-git
 
 function prompt {
     if (Test-Path variable:global:ompjob) {
         Receive-Job -Wait -AutoRemoveJob -Job $global:ompjob | Invoke-Expression;
-        Receive-Job -Wait -AutoRemoveJob -Job $global:slowjob;
         Remove-Variable ompjob -Scope Global;
-        Remove-Variable slowjob -Scope Global;
         return prompt;
     }
     $ohmyposh_path = Get-Command oh-my-posh.exe -ea SilentlyContinue | Select-Object -ExpandProperty Source;
     $global:ompjob = Start-Job { param ([string]$profile_dir, [string]$ohmyposh_path) (@(& "$ohmyposh_path" init pwsh --config="$profile_dir\.pwsh10k.omp.json" --print) -join "`n") } -ArgumentList $profile_dir, $ohmyposh_path;
-    $global:slowjob = Start-Job { slowJobs };
     
     Write-Host -ForegroundColor Blue "Loading `$profile in the background..."
     Write-Host -ForegroundColor Green -NoNewline "  $($executionContext.SessionState.Path.CurrentLocation) ".replace($HOME, '~');
