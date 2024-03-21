@@ -85,6 +85,12 @@ if (Get-Command eza -ea SilentlyContinue) {
 }
 # --------------------
 
+# ---------- ghq & peco ----------
+function ghqcd() {
+    $repository = $(ghq list | peco)
+    $repositoryPath = (ghq root) + '/' + $repository
+    Set-Location $repositoryPath
+}
 
 # ---------- エイリアス ----------
 ## --------- エイリアスutil ----------
