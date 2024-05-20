@@ -1,3 +1,5 @@
+$profile_dir = Split-Path $profile
+
 Import-Module posh-git
 Invoke-Expression (&starship init powershell)
 
@@ -109,3 +111,11 @@ SafeSetAlias -Alias "export" -Command "set"
 SafeSetAlias -Alias "wget" -Command "wget2"
 SafeSetAlias -Alias "grep" -Command "ugrep", "grep", "Select-String"
 SafeSetAlias -Alias "htop" -Command "btm -b"
+
+function Invoke-Starship-TransientFunction {
+    &starship module character
+}
+  
+Invoke-Expression (&starship init powershell)
+  
+Enable-TransientPrompt
