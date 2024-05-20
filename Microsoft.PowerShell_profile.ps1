@@ -1,21 +1,5 @@
-$profile_dir = Split-Path $profile
-
 Import-Module posh-git
-
-function prompt {
-    if (Test-Path variable:global:ompjob) {
-        Receive-Job -Wait -AutoRemoveJob -Job $global:ompjob | Invoke-Expression;
-        Remove-Variable ompjob -Scope Global;
-        return prompt;
-    }
-    $ohmyposh_path = Get-Command oh-my-posh.exe -ea SilentlyContinue | Select-Object -ExpandProperty Source;
-    $global:ompjob = Start-Job { param ([string]$profile_dir, [string]$ohmyposh_path) (@(& "$ohmyposh_path" init pwsh --config="$profile_dir\.pwsh10k.omp.json" --print) -join "`n") } -ArgumentList $profile_dir, $ohmyposh_path;
-    
-    Write-Host -ForegroundColor Blue "Loading `$profile in the background..."
-    Write-Host -ForegroundColor Green -NoNewline "  $($executionContext.SessionState.Path.CurrentLocation) ".replace($HOME, '~');
-    Write-Host -ForegroundColor Red -NoNewline ">"
-    return " ";
-}
+Invoke-Expression (&starship init powershell)
 
 # ---------- 補完表示設定 ----------
 Set-PSReadLineOption -PredictionSource History -PredictionViewStyle ListView
