@@ -78,6 +78,27 @@ function ghqcd() {
     Set-Location $repositoryPath
 }
 
+# ---------- go install ----------
+function GoInstall() {
+    Param(
+        [Parameter(Mandatory = $true, Position = 0)]
+        [string]$Package,
+        [Parameter(Mandatory = $false, Position = 1)]
+        [string]$Version = "latest"
+    )
+
+    $command_name = [System.IO.Path]::GetFileNameWithoutExtension($Package)
+    if (!(Get-Command $command_name -ea SilentlyContinue)) {
+        go install $Package@$Version
+    }
+}
+
+GoInstall -Package "github.com/mattn/kubectl-finalize_namespace"
+GoInstall -Package "github.com/x-motemen/ghq"
+GoInstall -Package "github.com/google/wire/cmd/wire"
+GoInstall -Package "github.com/stern/stern"
+GoInstall -Package "github.com/nao1215/gup"
+
 # ---------- エイリアス ----------
 ## --------- エイリアスutil ----------
 function SafeSetAlias {
