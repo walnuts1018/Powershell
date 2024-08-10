@@ -36,6 +36,11 @@ if (Get-Command helm -ea SilentlyContinue) {
     . "$profile_dir\helm.ps1"
 }
 
+if (Get-Command docker -ea SilentlyContinue) {
+    #docker completion powershell | Out-String | Invoke-Expression;
+    . "$profile_dir\docker.ps1"
+}
+
 # ---------- eza ----------
 if (Get-Command eza -ea SilentlyContinue) {
     Remove-Alias -Name: "ls"
@@ -140,3 +145,11 @@ function Invoke-Starship-TransientFunction {
 Invoke-Expression (&starship init powershell)
   
 Enable-TransientPrompt
+
+$env:KUBE_EDITOR = "code -w"
+
+
+#f45873b3-b655-43a6-b217-97c00aa0db58 PowerToys CommandNotFound module
+
+Import-Module -Name Microsoft.WinGet.CommandNotFound
+#f45873b3-b655-43a6-b217-97c00aa0db58
