@@ -1,6 +1,7 @@
 $profile_dir = Split-Path $profile
 
 Import-Module posh-git
+Import-Module DockerCompletion
 Invoke-Expression (&starship init powershell)
 
 # ---------- 補完表示設定 ----------
@@ -91,6 +92,12 @@ function GoInstall() {
     if (!(Get-Command $command_name -ea SilentlyContinue)) {
         go install $Package@$Version
     }
+}
+
+# ---------- gh -------------------
+if (Get-Command gh -ea SilentlyContinue) {
+    #gh completion -s powershell | Out-String | Invoke-Expression;
+    . "$profile_dir\gh.ps1"
 }
 
 GoInstall -Package "github.com/mattn/kubectl-finalize_namespace"
