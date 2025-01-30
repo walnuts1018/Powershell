@@ -43,7 +43,9 @@ if (Get-Command docker -ea SilentlyContinue) {
 
 # ---------- eza ----------
 if (Get-Command eza -ea SilentlyContinue) {
-    Remove-Alias -Name: "ls"
+    if (Get-Alias -Name: "ls" -ea SilentlyContinue) {
+        Remove-Alias -Name: "ls"
+    }
 
     function ls() {
         eza --git -@ -g -mU --icons --time-style=long-iso --color=automatic --group-directories-first --hyperlink -h $args
@@ -74,13 +76,16 @@ if (Get-Command eza -ea SilentlyContinue) {
         ls -Tl --no-permissions --no-filesize --no-user --no-time
     }
 }
-# --------------------
 
 # ---------- ghq & peco ----------
 function ghqcd() {
-    $repository = $(ghq list | peco)
-    $repositoryPath = (ghq root) + '/' + $repository
-    Set-Location $repositoryPath
+    Param(
+        [Parameter(Mandatory = $false, Position = 0)]
+        [string]$Query = ""
+    )
+    $selectedRepo = $(ghq list | peco --query "$Query")
+    $repoPath = (ghq root) + '/' + $selectedRepo
+    Set-Location $repoPath
 }
 
 # ---------- go install ----------
@@ -153,3 +158,6 @@ $env:KUBE_EDITOR = "code -w"
 
 Import-Module -Name Microsoft.WinGet.CommandNotFound
 #f45873b3-b655-43a6-b217-97c00aa0db58
+
+Set-Item Env:Path "$Env:LOCALAPPDATA\aquaproj-aqua\bat;$Env:LOCALAPPDATA\aquaproj-aqua\bin;$Env:Path"
+
